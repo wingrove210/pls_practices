@@ -7,6 +7,8 @@ import 'cart_page.dart';
 import 'favorites_page.dart';
 import 'login_page.dart';
 import 'registration_page.dart';
+import 'edit_page.dart'; // Import the edit products page
+import 'profile_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,6 +43,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, dynamic>> products = [];
   final List<Map<String, dynamic>> cartItems = [];
   final List<Map<String, dynamic>> favoriteItems = [];
+  final List<Map<String, dynamic>> orders = []; // List to store orders
+  String? _userName;
 
   @override
   void initState() {
@@ -100,6 +104,22 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  int _getProductCount(Map<String, dynamic> product) {
+    return cartItems.where((item) => item == product).length;
+  }
+
+  void _logout() {
+    setState(() {
+      _userName = null; // Clear the username
+    });
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LoginPage(onLoginSuccess: _onLoginSuccess),
+      ),
+    );
+  }
+
   void _openCart() {
     Navigator.push(
       context,
@@ -107,6 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (context) => CartPage(
           cartItems: cartItems,
           onRemove: _removeFromCart,
+          onOrder: _placeOrder, // Pass the order function
         ),
       ),
     );
@@ -124,137 +145,268 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _onLoginSuccess(String username, String token) {
+    setState(() {
+      _userName = username;
+    });
+  }
+
   void _openLoginPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
+      MaterialPageRoute(
+        builder: (context) => LoginPage(onLoginSuccess: _onLoginSuccess),
+      ),
     );
   }
 
   void _openRegistrationPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const RegistrationPage()),
+      MaterialPageRoute(
+        builder: (context) => RegistrationPage(
+          onRegistrationSuccess: _onLoginSuccess,
+        ),
+      ),
+    );
+  }
+
+  void _openEditProductsPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProductsPage(
+          products: List.from(products),
+          onUpdate: _loadProducts,
+        ),
+      ),
+    ).then((_) => _loadProducts());
+  }
+
+  void _openProfilePage() {
+    if (_userName != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProfilePage(
+            username: _userName!,
+            orders: orders,
+            onLogout: _logout, // Pass the logout function
+          ),
+        ),
+      );
+    }
+  }
+
+  void _placeOrder(List<Map<String, dynamic>> items, DateTime orderTime) {
+    final order = {
+      'items': items,
+      'deliveryTime': orderTime.add(const Duration(hours: 1)).toString(), // Example delivery time
+    };
+    setState(() {
+      orders.add(order); // Add the order to the list
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Order placed successfully!")),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-appBar: AppBar(
-  backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-  title: Text(widget.title),
-  actions: [
-    Row(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.shopping_cart),
-              onPressed: _openCart,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black,
+              Colors.grey,
+            ],
+          ),
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent, // Transparent background
+            elevation: 0, // Remove shadow
+            iconTheme: const IconThemeData(color: Colors.white), // White icons
+            title: Text(
+              widget.title,
+              style: const TextStyle(color: Colors.white), // White text
             ),
-            if (cartItems.isNotEmpty)
-              Positioned(
-                right: 4,
-                top: 4,
-                child: CircleAvatar(
-                  radius: 10,
-                  backgroundColor: Colors.red,
-                  child: Text(
-                    '${cartItems.length}',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
+            actions: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart),
+                    onPressed: _openCart,
                   ),
-                ),
-              ),
-          ],
-        ),
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.favorite),
-              onPressed: _openFavorites,
-            ),
-            if (favoriteItems.isNotEmpty)
-              Positioned(
-                right: 4,
-                top: 4,
-                child: CircleAvatar(
-                  radius: 10,
-                  backgroundColor: Colors.red,
-                  child: Text(
-                    '${favoriteItems.length}',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                ),
-              ),
-          ],
-        ),
-        TextButton(
-          onPressed: _openLoginPage,
-          child: const Text("Login", style: TextStyle(color: Colors.white)),
-        ),
-        TextButton(
-          onPressed: _openRegistrationPage,
-          child: const Text("Register", style: TextStyle(color: Colors.white)),
-        ),
-      ],
-    ),
-  ],
-),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Center(
-          child: Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: products.map((product) {
-              final isFavorite = favoriteItems.contains(product);
-              return GestureDetector(
-                onTap: () => _openProductDetails(product),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width / 2 - 24,
-                  child: Card(
-                    elevation: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.diamond, // Поставьте реальную иконку, если доступно
-                            size: 50,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            product['name'],
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            product['price'].toString(), // Преобразование в строку
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          IconButton(
-                            icon: Icon(isFavorite
-                                ? Icons.favorite
-                                : Icons.favorite_border),
-                            color: isFavorite ? Colors.red : null,
-                            onPressed: () => _toggleFavorite(product),
-                          ),
-                          ElevatedButton(
-                            onPressed: () => _addToCart(product),
-                            child: const Text("Add to Cart"),
-                          ),
-                        ],
+                  if (cartItems.isNotEmpty)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Colors.red,
+                        child: Text(
+                          '${cartItems.length}',
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        ),
                       ),
                     ),
+                ],
+              ),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.favorite),
+                    onPressed: _openFavorites,
                   ),
+                  if (favoriteItems.isNotEmpty)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Colors.red,
+                        child: Text(
+                          '${favoriteItems.length}',
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: products.map((product) {
+                  final isFavorite = favoriteItems.contains(product);
+                  final productCount = _getProductCount(product);
+                  return GestureDetector(
+                    onTap: () => _openProductDetails(product),
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width / 2 - 24,
+                      child: Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black,
+                                Colors.grey,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          child: Stack(
+                            children: [
+                              Center( // Center the content vertically and horizontally
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,  // Centers content vertically
+                                    crossAxisAlignment: CrossAxisAlignment.center,  // Centers content horizontally
+                                    children: [
+                                      // Display the product image
+                                      Image.network(
+                                        product['image'], // Ensure your product contains an 'image_url' key
+                                        height: 100,
+                                        width: 100,
+                                        fit: BoxFit.cover,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        product['name'],
+                                        style: Theme.of(context).textTheme.bodyMedium,
+                                        textAlign: TextAlign.center,  // Center the product name
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        product['price'].toString(),
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      if (productCount == 0)
+                                        ElevatedButton(
+                                          onPressed: () => _addToCart(product),
+                                          child: const Text("Add to Cart"),
+                                        )
+                                      else
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.remove),
+                                              onPressed: () => _removeFromCart(product),
+                                            ),
+                                            Text('$productCount'),
+                                            IconButton(
+                                              icon: const Icon(Icons.add),
+                                              onPressed: () => _addToCart(product),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: IconButton(
+                                  icon: Icon(
+                                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                                    color: isFavorite ? Colors.red : Colors.white,
+                                  ),
+                                  onPressed: () => _toggleFavorite(product),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+          bottomNavigationBar: BottomAppBar(
+            color: Colors.transparent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.login),
+                  onPressed: _openLoginPage,
+                  tooltip: 'Login',
                 ),
-              );
-            }).toList(),
+                IconButton(
+                  icon: const Icon(Icons.app_registration),
+                  onPressed: _openRegistrationPage,
+                  tooltip: 'Register',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: _openEditProductsPage,
+                  tooltip: 'Edit Products',
+                ),
+              ],
+            ),
           ),
         ),
       ),
