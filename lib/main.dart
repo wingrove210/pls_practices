@@ -5,10 +5,6 @@ import 'dart:convert';
 import 'product_details.dart';
 import 'cart_page.dart';
 import 'favorites_page.dart';
-import 'login_page.dart';
-import 'registration_page.dart';
-import 'edit_page.dart'; // Import the edit products page
-import 'profile_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -43,8 +39,6 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, dynamic>> products = [];
   final List<Map<String, dynamic>> cartItems = [];
   final List<Map<String, dynamic>> favoriteItems = [];
-  final List<Map<String, dynamic>> orders = []; // List to store orders
-  String? _userName;
 
   @override
   void initState() {
@@ -108,30 +102,17 @@ class _MyHomePageState extends State<MyHomePage> {
     return cartItems.where((item) => item == product).length;
   }
 
-  void _logout() {
-    setState(() {
-      _userName = null; // Clear the username
-    });
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LoginPage(onLoginSuccess: _onLoginSuccess),
+void _openCart() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => CartPage(
+        cartItems: cartItems,
+        onRemove: _removeFromCart,
       ),
-    );
-  }
-
-  void _openCart() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CartPage(
-          cartItems: cartItems,
-          onRemove: _removeFromCart,
-          onOrder: _placeOrder, // Pass the order function
-        ),
-      ),
-    );
-  }
+    ),
+  );
+}
 
   void _openFavorites() {
     Navigator.push(
@@ -142,72 +123,6 @@ class _MyHomePageState extends State<MyHomePage> {
           onRemove: _toggleFavorite,
         ),
       ),
-    );
-  }
-
-  void _onLoginSuccess(String username, String token) {
-    setState(() {
-      _userName = username;
-    });
-  }
-
-  void _openLoginPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LoginPage(onLoginSuccess: _onLoginSuccess),
-      ),
-    );
-  }
-
-  void _openRegistrationPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => RegistrationPage(
-          onRegistrationSuccess: _onLoginSuccess,
-        ),
-      ),
-    );
-  }
-
-  void _openEditProductsPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditProductsPage(
-          products: List.from(products),
-          onUpdate: _loadProducts,
-        ),
-      ),
-    ).then((_) => _loadProducts());
-  }
-
-  void _openProfilePage() {
-    if (_userName != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProfilePage(
-            username: _userName!,
-            orders: orders,
-            onLogout: _logout, // Pass the logout function
-          ),
-        ),
-      );
-    }
-  }
-
-  void _placeOrder(List<Map<String, dynamic>> items, DateTime orderTime) {
-    final order = {
-      'items': items,
-      'deliveryTime': orderTime.add(const Duration(hours: 1)).toString(), // Example delivery time
-    };
-    setState(() {
-      orders.add(order); // Add the order to the list
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Order placed successfully!")),
     );
   }
 
@@ -314,16 +229,15 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           child: Stack(
                             children: [
-                              Center( // Center the content vertically and horizontally
+                              Center(
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,  // Centers content vertically
-                                    crossAxisAlignment: CrossAxisAlignment.center,  // Centers content horizontally
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      // Display the product image
                                       Image.network(
-                                        product['image'], // Ensure your product contains an 'image_url' key
+                                        product['image'],
                                         height: 100,
                                         width: 100,
                                         fit: BoxFit.cover,
@@ -332,7 +246,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       Text(
                                         product['name'],
                                         style: Theme.of(context).textTheme.bodyMedium,
-                                        textAlign: TextAlign.center,  // Center the product name
+                                        textAlign: TextAlign.center,
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
@@ -383,29 +297,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 }).toList(),
               ),
-            ),
-          ),
-          bottomNavigationBar: BottomAppBar(
-            color: Colors.transparent,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.login),
-                  onPressed: _openLoginPage,
-                  tooltip: 'Login',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.app_registration),
-                  onPressed: _openRegistrationPage,
-                  tooltip: 'Register',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: _openEditProductsPage,
-                  tooltip: 'Edit Products',
-                ),
-              ],
             ),
           ),
         ),

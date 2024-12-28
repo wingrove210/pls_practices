@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 class CartPage extends StatefulWidget {
   final List<Map<String, dynamic>> cartItems;
   final Function(Map<String, dynamic>) onRemove;
-  final Function(List<Map<String, dynamic>>, DateTime) onOrder; // Callback for placing an order
 
   const CartPage({
     Key? key,
     required this.cartItems,
     required this.onRemove,
-    required this.onOrder,
   }) : super(key: key);
 
   @override
@@ -19,10 +17,17 @@ class CartPage extends StatefulWidget {
 class _CartPageState extends State<CartPage> {
   void _placeOrder() {
     if (widget.cartItems.isNotEmpty) {
-      DateTime orderTime = DateTime.now();
-      widget.onOrder(widget.cartItems, orderTime); // Pass the cart items and order time
-      widget.cartItems.clear(); // Clear the cart after placing the order
-      Navigator.pop(context); // Go back to the previous screen
+      // Имитация оформления заказа
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Order placed successfully!"),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      setState(() {
+        widget.cartItems.clear(); // Очистка корзины после заказа
+      });
+      Navigator.pop(context); // Возврат на предыдущий экран
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Your cart is empty")),
@@ -45,18 +50,23 @@ class _CartPageState extends State<CartPage> {
           ),
         ),
         child: Scaffold(
-          backgroundColor: Colors.transparent, // Ensure the gradient shows
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
-            backgroundColor: Colors.transparent, // Transparent AppBar
-            elevation: 0, // Remove the shadow
+            backgroundColor: Colors.transparent,
+            elevation: 0,
             title: const Text(
               "Your Cart",
-              style: TextStyle(color: Colors.white), // White text for the title
+              style: TextStyle(color: Colors.white),
             ),
-            iconTheme: const IconThemeData(color: Colors.white), // White icons
+            iconTheme: const IconThemeData(color: Colors.white),
           ),
           body: widget.cartItems.isEmpty
-              ? const Center(child: Text("Your cart is empty", style: TextStyle(color: Colors.white)))
+              ? const Center(
+                  child: Text(
+                    "Your cart is empty",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
               : Column(
                   children: [
                     Expanded(
@@ -66,7 +76,8 @@ class _CartPageState extends State<CartPage> {
                           final item = widget.cartItems[index];
                           return Card(
                             elevation: 4,
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -80,22 +91,32 @@ class _CartPageState extends State<CartPage> {
                                     Colors.grey,
                                   ],
                                 ),
-                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(12)),
                               ),
                               child: ListTile(
                                 leading: ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
                                   child: Image.network(
-                                    item['image'], // Display the product image
+                                    item['image'],
                                     height: 50,
                                     width: 50,
                                     fit: BoxFit.cover,
                                   ),
                                 ),
-                                title: Text(item['name'], style: const TextStyle(color: Colors.white)),
-                                subtitle: Text("\$${item['price']}", style: const TextStyle(color: Colors.white)), // Display price
+                                title: Text(
+                                  item['name'],
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                subtitle: Text(
+                                  "\$${item['price']}",
+                                  style: const TextStyle(color: Colors.white),
+                                ),
                                 trailing: IconButton(
-                                  icon: const Icon(Icons.remove_circle_outline, color: Colors.white),
+                                  icon: const Icon(
+                                    Icons.remove_circle_outline,
+                                    color: Colors.white,
+                                  ),
                                   onPressed: () {
                                     widget.onRemove(item);
                                     setState(() {});
@@ -107,9 +128,18 @@ class _CartPageState extends State<CartPage> {
                         },
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: _placeOrder,
-                      child: const Text("Order", style: TextStyle(color: Colors.white)), // Button to place the order
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.yellowAccent,
+                        ),
+                        onPressed: _placeOrder,
+                        child: const Text(
+                          "Order",
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
                     ),
                   ],
                 ),

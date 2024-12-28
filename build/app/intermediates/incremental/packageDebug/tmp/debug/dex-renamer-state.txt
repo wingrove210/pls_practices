@@ -1,4 +1,4 @@
-#Fri Dec 27 22:04:57 MSK 2024
+#Sat Dec 28 02:36:51 MSK 2024
 base.0=/Users/vladdremenko/flutter_application_2/build/app/intermediates/dex/debug/mergeExtDexDebug/classes.dex
 base.1=/Users/vladdremenko/flutter_application_2/build/app/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
 base.2=/Users/vladdremenko/flutter_application_2/build/app/intermediates/dex/debug/mergeProjectDexDebug/1/classes.dex
