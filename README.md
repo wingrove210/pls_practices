@@ -40,11 +40,17 @@
 - Добавил несколько экранов с различным содержимым.
   ### 1. Главный экран
 <img width="382" alt="Снимок экрана 2024-12-28 в 04 50 17" src="https://github.com/user-attachments/assets/d0b76983-3f81-444b-9052-fb12ee53b78e"/>
- ### 1. Карточка товара
+
+ ### 2. Карточка товара
+ 
 <img width="382" alt="Снимок экрана 2024-12-28 в 04 50 29" src="https://github.com/user-attachments/assets/6bde76f9-fb46-4ca6-a56a-7fad445a90bd" />
- ### 1. Корзина
+
+ ### 3. Корзина
+ 
 <img width="382" alt="Снимок экрана 2024-12-28 в 04 50 41" src="https://github.com/user-attachments/assets/d5648b6d-d388-4618-a681-9929af0e780a" />
- ### 1. Избранное
+
+ ### 4. Избранное
+ 
 <img width="382" alt="Снимок экрана 2024-12-28 в 04 50 53" src="https://github.com/user-attachments/assets/372dfe9a-640a-4114-8b01-dbf94afcfb3d" />
 
 
